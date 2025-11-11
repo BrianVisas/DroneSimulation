@@ -325,3 +325,4 @@ class HeadlessRenderer:
             self.frames.append(frame)
 
         return self.frames
+
