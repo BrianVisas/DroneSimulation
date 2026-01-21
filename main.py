@@ -11,9 +11,11 @@ import sys
 from pathlib import Path
 
 from backend import ConfigLoader, Simulation
-from gui import DroneViewer
-from gui.mesh_viewer import MeshDroneViewer
+#from gui import DroneViewer
+#from gui.mesh_viewer import MeshDroneViewer
 from export import DataExporter, VideoExporter
+
+
 
 def run_simulation(config_path: str, headless: bool = False, export_video: bool = False, mesh_name: str = 'spot'):
     """
@@ -25,6 +27,30 @@ def run_simulation(config_path: str, headless: bool = False, export_video: bool 
         export_video: Export video after simulation
         mesh_name: use mesh, lays in assets/drones with name
     """
+    if not headless:
+        # Import GUI lazily so API mode does not require vispy/quartz
+        if mesh_name:
+            from gui.mesh_viewer import MeshDroneViewer
+        else:
+            from gui import DroneViewer
+
+        print("\nStarting 3D visualization...")
+        print("Controls:")
+        print("  - Mouse: Rotate camera")
+        print("  - Scroll: Zoom")
+        print("  - Close window to end simulation")
+
+        if mesh_name:
+            print(f"  - Using 3D mesh visualization with name ({mesh_name})")
+            mesh_path = f"assets/drones/{mesh_name}.obj.gz"
+            texture_path = f"assets/drones/{mesh_name}.png"
+            viewer = MeshDroneViewer(simulation, mesh_path=mesh_path, texture_path=texture_path)
+        else:
+            viewer = DroneViewer(simulation)
+
+        viewer.run()
+
+
     print(f"Loading configuration: {config_path}")
     config = ConfigLoader.load(config_path)
 
