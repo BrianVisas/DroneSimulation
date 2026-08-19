@@ -23,6 +23,23 @@ The implementation adds a video-based trajectory extraction workflow using OpenC
 - optional trajectory-overlay video generation
 - retained trajectory/result artifacts from a multi-drone simulation experiment
 
+### Maintained research utility
+
+The original implementation remains preserved in Git history. A cleaned, reusable version is available at:
+
+- [`research/trajectory_extraction.py`](research/trajectory_extraction.py)
+- [`research/README.md`](research/README.md)
+
+The maintained version removes machine-specific paths and exposes the experiment as a command-line tool while preserving the two original extraction approaches.
+
+Example:
+
+```bash
+python research/trajectory_extraction.py path/to/simulation.mp4 \
+  --output-csv results/trajectory_observations.csv \
+  --overlay results/trajectory_overlay.mp4
+```
+
 ## Role in the wider research workflow
 
 ```text
