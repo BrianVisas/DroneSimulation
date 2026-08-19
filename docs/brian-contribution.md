@@ -2,90 +2,75 @@
 
 ## Provenance
 
-This repository is a fork of `linda78/DroneSimulation`.
+This repository is a fork of `linda78/DroneSimulation`, originally authored and maintained by Linda Mümken.
 
-For the thesis-extension work documented here, the technical comparison baseline is the branch `linda/mpc_approach`, whose baseline commit is:
+The history on `feature/Drone_Simulation_Updates` is collaborative: it contains Brian-authored commits as well as changes merged from Linda's branches. For that reason, this document distinguishes **directly attributable Brian work** from the surrounding simulation platform instead of treating the entire branch delta as one person's implementation.
 
-`645a28e0cf6bc9563743de46cdc021087a992f01`
+Important reference points:
 
-The branch `feature/Drone_Simulation_Updates` is 17 commits ahead of that baseline. The presentation branch `brian/thesis-extension` is based on that feature branch and adds documentation that makes the extension boundaries explicit.
+- Linda MPC baseline: `645a28e0cf6bc9563743de46cdc021087a992f01`
+- Linda REST/API merge: `73a6bd26ffd7ce82bf2fe42f6da0aa0206a35352`
+- Brian OpenCV trajectory extraction: `8835e7180176cc11edf68a0ce8bcf041199c6c3f`
+- Presentation branch: `brian/thesis-extension`
 
-This document describes the extension surface. It does not claim ownership of the upstream simulation architecture or every historical commit contained in the fork.
+## Directly attributable contribution
 
-## Extension surface
+### OpenCV trajectory extraction
 
-### 1. REST-based simulation integration
+Verified Brian-authored commit:
 
-Relevant files:
+[`8835e7180176cc11edf68a0ce8bcf041199c6c3f`](https://github.com/BrianVisas/DroneSimulation/commit/8835e7180176cc11edf68a0ce8bcf041199c6c3f) — `openCV trajectory extraction`
 
-- `api/server.py`
-- `RestServerQuickstart.md`
+This commit adds a `DroneTrajectoryExtractor` workflow for deriving motion observations from recorded simulation video. The implementation includes:
 
-The extension branch expands the simulation's REST-facing control and state-access surface so an external process can load/configure a simulation, control execution, step the simulator, and retrieve state/history data.
+- OpenCV video ingestion
+- background-subtraction-based moving-object extraction
+- contour filtering and centroid/bounding-box calculation
+- Lucas–Kanade optical-flow tracking as an alternative extraction mode
+- frame/timestamp trajectory records
+- CSV export using pandas
+- optional trajectory-overlay video generation
+- retained trajectory/result artifacts from an MPC multi-drone experiment
 
-This API surface is the key integration boundary between the simulation and external trajectory-processing workflows.
+The implementation appears historically under `output/import cv2.py`; the unusual filename is preserved because this branch documents the original research history rather than rewriting authorship or commit history.
 
-### 2. Runtime and execution integration
+### Research integration role
 
-Relevant file:
+The contribution was used in a larger thesis workflow in which simulated multi-drone motion provided observations for trajectory-prediction experiments. The stronger TPT/BoF integration work is documented separately in `BrianVisas/TLCAmpcBrian` and the BoF project.
 
-- `main.py`
+## Collaborative / upstream components
 
-The runtime entry point on the extension branch includes integration changes for simulation execution and visualization selection. This makes the simulator usable both interactively and as a controlled component in a larger experiment workflow.
+The following components are present in this branch but should **not** be presented as solely Brian-authored without commit-level evidence:
 
-### 3. Automated validation
+- the core 3D simulation architecture
+- MPC and collision-avoidance implementation
+- REST/Swagger simulation API and `RestServerQuickstart.md`
+- mesh/visualization work inherited from Linda's history
+- automated simulation test suite
 
-Relevant files:
+In particular, the REST/API material entered the history through Linda's `linda/rest_api` work and merge commit `73a6bd26ffd7ce82bf2fe42f6da0aa0206a35352`.
 
-- `tests/test_config.py`
-- `tests/test_drone.py`
-- `tests/test_environment.py`
-- `tests/test_flight_model.py`
-- `tests/test_route.py`
-- `tests/README.md`
-
-The extension branch adds automated tests covering configuration parsing, drone state/model behaviour, route generation, environment boundaries/collision behaviour, and flight-model dynamics.
-
-These tests provide regression protection around the simulation components used by the integration workflow.
-
-### 4. Visualization extensions
-
-Relevant branch delta includes additions under:
-
-- `gui/`
-
-The extension branch adds additional visualization capabilities, including mesh-oriented drone rendering support, while retaining the upstream visualization architecture.
-
-### 5. Experiment trajectory data
-
-Relevant file:
-
-- `drone_trajectories.csv`
-
-This file is retained as an experiment artifact from the integration work. It is not presented as a reusable benchmark dataset.
-
-## System role in the thesis workflow
-
-At a high level, the simulator provides drone motion/state data and a controllable execution environment:
+## System relationship
 
 ```text
-Drone simulation
-      |
-      | state / positions
-      v
-REST integration boundary
-      |
-      v
-External trajectory-prediction workflow
-      |
-      v
-Prediction / evaluation / visualization
+Linda's DroneSimulation platform
+          |
+          | simulated / rendered drone motion
+          v
+Brian's OpenCV trajectory extraction
+          |
+          | time-indexed observations / CSV
+          v
+Trajectory-prediction research workflow
+          |
+          v
+BoF / TPT evaluation and visualization
 ```
 
-Trajectory-Prediction-Tube-specific integration is surfaced separately in the `BrianVisas/TLCAmpcBrian` fork.
+## Why this fork is retained
 
-## What remains upstream
+This fork demonstrates collaboration on an existing research codebase rather than ownership of the complete simulator. It preserves the original platform provenance while making Brian's directly traceable extension visible through commit history and focused documentation.
 
-The underlying drone simulation framework, original architecture, flight/collision-avoidance concepts, and upstream project authorship remain attributed to Linda Mümken and the upstream repository.
+## Attribution
 
-The purpose of this fork is to make the extension and integration work traceable without obscuring that provenance.
+The original DroneSimulation framework and Linda-authored extensions remain attributed to Linda Mümken and `linda78/DroneSimulation`. No claim in this document transfers authorship of those components to Brian Visas.
