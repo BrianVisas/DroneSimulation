@@ -319,7 +319,7 @@ The simulation automatically exports data to the configured `output_dir`:
 
 Videos are exported in MP4 format with configurable frame rate:
 ```bash
-python main.py run configs/multi_view.yaml --export-video
+python main.py run configs/multi_drone.yaml --export-video
 ```
 
 ## Development
