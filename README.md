@@ -319,7 +319,7 @@ The simulation automatically exports data to the configured `output_dir`:
 
 Videos are exported in MP4 format with configurable frame rate:
 ```bash
-python main.py run configs/multi_drone.yaml --export-video
+python main.py run configs/multi_view.yaml --export-video
 ```
 
 ## Development
@@ -348,6 +348,9 @@ class MyAvoidanceAgent(AvoidanceAgent):
     def calculate_avoidance(self, drone, other_drones):
         # Calculate evasion vector
         return avoidance_vector
+
+    def get_name(self):
+        return "MyAvoidanceAgent"
 ```
 
 2. Register in `backend/simulation.py` in `_create_avoidance_agent()`
