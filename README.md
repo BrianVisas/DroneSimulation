@@ -1,3 +1,43 @@
+# Drone Simulation — Thesis Extension
+
+> **Upstream provenance:** this repository is a fork of [`linda78/DroneSimulation`](https://github.com/linda78/DroneSimulation), originally authored and maintained by Linda Mümken. The upstream framework and its original authorship remain unchanged and fully attributed.
+>
+> **Contribution branch:** `brian/thesis-extension` documents the thesis-oriented extension built on top of Linda's `linda/mpc_approach` baseline.
+
+## Brian Visas — contribution overview
+
+My work in this fork focused on extending the existing multi-drone simulation so it could be controlled, observed, tested, and integrated with an external trajectory-prediction workflow.
+
+The contribution surface on this branch includes:
+
+- extended REST-based simulation control and state access in `api/server.py`
+- stepwise/runtime integration changes in `main.py`
+- trajectory-data capture used during integration experiments
+- additional 3D visualization support and mesh-based drone rendering
+- automated tests covering configuration, drone state, routes, environment behaviour, and flight models
+- REST API usage and integration documentation
+
+The branch is **17 commits ahead of the `linda/mpc_approach` baseline**. This statement describes the branch delta, not sole authorship of every historical file or commit in the fork.
+
+### Contribution map
+
+| Area | Extension / evidence |
+| --- | --- |
+| Simulation API | `api/server.py` |
+| Runtime integration | `main.py` |
+| API usage | `RestServerQuickstart.md` |
+| Automated validation | `tests/` and `tests/README.md` |
+| 3D/mesh visualization | `gui/` additions on the extension branch |
+| Experiment trajectory data | `drone_trajectories.csv` |
+
+For a detailed provenance and implementation map, see [`docs/brian-contribution.md`](docs/brian-contribution.md).
+
+## Relationship to the thesis workflow
+
+This simulator served as one side of the larger multi-drone trajectory-prediction workflow: simulated drone states could be exposed through the API and consumed by external prediction/integration components. The trajectory-prediction and TPT-specific integration is documented separately in the `TLCAmpcBrian` fork.
+
+---
+
 # 3D Drone Simulation
 
 A state-of-the-art 3D drone simulation with physically accurate flight dynamics, interchangeable collision avoidance algorithms and real-time visualisation.
@@ -160,225 +200,39 @@ Configuration files are in YAML format and define all aspects of the simulation.
 ```yaml
 simulation:
   name: "My Simulation"
-  duration: 60.0        # Duration in seconds
-  time_step: 0.05       # Time step in seconds
-  real_time: false      # Real-time mode
+  duration: 60.0
+  time_step: 0.05
+  real_time: false
 
 room:
-  dimensions: [20.0, 20.0, 10.0]  # Width, depth, height in metres
-  texture_path: null              # Path to image/video
+  dimensions: [20.0, 20.0, 10.0]
+  texture_path: null
   is_video: false
-
-drones:
-  - count: 3                      # Number of drones
-    max_speed: 5.0                # Max. speed (m/s)
-    max_acceleration: 2.0         # Max. acceleration (m/s²)
-    size: 0.3                     # Drone size (radius in m)
-    colour: [1.0, 0.2, 0.2]       # RGB colour (0-1)
-    route_type: "circular"        # circular, rectangular, waypoints
-    route_params:
-      centre: [10, 10, 0]
-      radius: 5.0
-      height: 5.0
-      num_points: 8
-
-flight_model:
-  type: "physical"                # physical, simple
-  params:
-    drag_coefficient: 0.1
-    approach_distance: 2.0
-
-avoidance:
-  type: "right"                   # right, repulsive, velocity_obstacle
-  detection_radius: 3.0
-  params:
-    avoidance_strength: 1.0
-
-visualisation:
-  show_trajectories: true
-  trajectory_length: 50
-  camera_follow: null             # Drone ID or null
-
-export:
-  video: false
-  data: true
-  video_fps: 30
-  output_dir: "output"
 ```
-
-## Available Flight Models
-
-### Physical Flight Model
-Physically realistic model with:
-- Smooth acceleration and deceleration
-- Air resistance (drag)
-- Speed and acceleration limits
-- Automatic braking when approaching waypoints
-
-### Simple Flight Model
-Simple model with constant speed for direct movement to the target.
-
-## Collision Avoidance Algorithms
-
-### Right Avoidance Agent
-Always evades other drones to the right (like traffic rules).
-- Parameter: `avoidance_strength`
-
-### Repulsive Avoidance Agent
-Uses repulsive forces (inverse square law).
-- Parameter: `repulsion_strength`
-
-### Velocity Obstacle Avoidance Agent
-Considers velocities for predictive collision avoidance.
-- Parameter: `time_horizon`
 
 ## REST API
 
-### Endpoints
-
-- `GET /api/status` - Retrieve simulation status
-- `GET /api/simulation` - Retrieve current state
-- `POST /api/simulation` - Load simulation
-- `POST /api/simulation/control/start` - Start simulation
-- `POST /api/simulation/control/stop` - Stop simulation
-- `POST /api/simulation/control/reset` - Reset simulation
-- `POST /api/simulation/control/step` - Execute one step
-- `GET /api/drones` - Retrieve all drones
-- `GET /api/drones/<id>` - Retrieve specific drone
-- `GET /api/history` - Retrieve simulation history
-
-### Example Usage
-
-```bash
-# Start server
-python main.py api
-
-# Load simulation
-curl -X POST http://localhost:5000/api/simulation \
-  -H "Content-Type: application/json" \
-  -d '{"config_path": "configs/simple_demo.yaml"}'
-
-# Start simulation
-curl -X POST http://localhost:5000/api/simulation/control/start
-
-# Retrieve status
-curl http://localhost:5000/api/status
-```
-
-## Export Functions
-
-### Exporting Data
-
-The simulation automatically exports data to the configured `output_dir`:
-- `simulation_data.json` - Complete state history
-- `simulation_data.csv` - Flat CSV file
-- `trajectories.html` - Interactive 3D plot
-- `summary.txt` - Textual summary
-
-### Exporting Video
-
-Videos are exported in MP4 format with configurable frame rate:
-```bash
-python main.py run configs/multi_drone.yaml --export-video
-```
+See `RestServerQuickstart.md` for the branch-specific API workflow and endpoint examples.
 
 ## Development
 
-### Adding a New Flight Model
-
-1. Create a new class in `model/flight_model.py`:
-```python
-class MyFlightModel(FlightModel):
-    def update(self, drone, target, dt, other_drones, avoidance_vector):
-        # Implement flight logic
-        new_state = ...
-        return new_state
-
-    def get_name(self):
-        return "MyFlightModel"
-```
-
-2. Register in `backend/simulation.py` in `_create_flight_model()`
-
-### Adding a New Avoidance Algorithm
-
-1. Create a new class in `model/avoidance_agent.py`:
-```python
-class MyAvoidanceAgent(AvoidanceAgent):
-    def calculate_avoidance(self, drone, other_drones):
-        # Calculate evasion vector
-        return avoidance_vector
-
-    def get_name(self):
-        return "MyAvoidanceAgent"
-```
-
-2. Register in `backend/simulation.py` in `_create_avoidance_agent()`
+The upstream simulation remains the architectural base for flight models, routing, simulation state and collision-avoidance experimentation. Extension-specific validation is under `tests/`.
 
 ## Technical Details
 
-### Technologies Used
-- **SimPy**: Event-based simulation
-- **VisPy**: High-performance 3D visualisation (OpenGL)
-- **NumPy**: Numerical calculations
-- **Flask**: REST API
-- **PyTorch**: (available for AI-based control)
-- **Pandas**: Data analysis and export
-- **Plotly**: Interactive plots
-- **OpenCV**: Video export
-
-### Performance
-- Supports 20+ drones in real time
-- Physics update with 0.05s time step (20 Hz)
-- 3D rendering with 30-60 FPS
-
-## Example Scenarios
-
-### 1. Simple Demo (3 Drones)
-```bash
-python main.py run configs/simple_demo.yaml
-```
-
-### 2. Multi-Drone (8 Drones, Different Groups)
-```bash
-python main.py run configs/multi_drone.yaml
-```
-
-### 3. Stress Test (20 Drones)
-```bash
-python main.py run configs/stress_test.yaml --headless
-```
-
-### 4. Camera Tracking
-```bash
-python main.py run configs/camera_follow.yaml
-```
-
-## Troubleshooting
-
-### ImportError: No module named 'vispy'
-Ensure all dependencies are installed:
-```bash
-pip install -r requirements.txt
-```
-
-### OpenGL Errors
-VisPy requires OpenGL. On some systems, an OpenGL driver may need to be installed.
-
-### Simulation Too Slow
-- Reduce the number of drones
-- Increase `time_step` in the configuration
-- Disable `show_trajectories`
-- Use headless mode
+Technologies used by the project include SimPy, VisPy, NumPy, Flask, Pandas, Plotly and OpenCV.
 
 ## Licence
 
 MIT Licence
 
-## Author
+## Upstream Author
 
 Linda Muemken
 
+## Extension Contributor
+
+Brian Visas — thesis-oriented REST integration, runtime/trajectory integration, visualization additions and automated validation documented on `brian/thesis-extension`.
 
 ## Further Development
 
